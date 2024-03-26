@@ -1,0 +1,5 @@
+Alembic
+
+alembic init migration
+alembic revision --autogenerate -m 'Init'
+alembic upgrade +1
