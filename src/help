@@ -1,5 +1,9 @@
-Alembic
+Alembic (SQLite)
 
 alembic init migration
 alembic revision --autogenerate -m 'Init'
 alembic upgrade +1
+
+Postgresql
+
+asynio

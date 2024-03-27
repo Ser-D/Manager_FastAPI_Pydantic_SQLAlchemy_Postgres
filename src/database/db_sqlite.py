@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from contacts.models import Base
+from ..contacts.models import Base
 
 DBSession = None
 

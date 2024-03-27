@@ -1,6 +1,8 @@
 from datetime import date
 from pydantic import Field, EmailStr, BaseModel, PastDatetime
 
+
+
 class ContactSchema(BaseModel):
     name: str = Field(min_length=2, max_length=25)
     surname: str = Field(min_length=2, max_length=50)
