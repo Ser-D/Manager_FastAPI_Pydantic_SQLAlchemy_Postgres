@@ -11,7 +11,8 @@ router = APIRouter(prefix='/contacts', tags=['contacts'])
 
 
 @router.get('/', response_model=list[ContactResponseSchema])
-async def root(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),db = Depends(get_database)) -> list[ContactResponseSchema]:
+async def get_contacts(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
+                       db=Depends(get_database)):
     contacts = await todos.get_contacts(limit, offset, db)
     return contacts
 
@@ -22,7 +23,6 @@ async def get_contact(contact_id: int = Path(ge=1), db: AsyncSession = Depends(g
     if contact is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='NOT FOUND')
     return contact
-
 
 
 @router.post('/', response_model=ContactResponseSchema, status_code=status.HTTP_201_CREATED)
