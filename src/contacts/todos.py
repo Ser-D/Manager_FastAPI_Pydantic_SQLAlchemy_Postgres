@@ -5,10 +5,9 @@ from src.contacts.models import ContactModel
 from src.contacts.schemas import ContactResponseSchema, ContactSchema
 
 
-
 async def get_contacts(limit: int, offset: int, db: AsyncSession):
     stmt = select(ContactModel).offset(offset).limit(limit)
-    todos = db.execute(stmt)
+    todos = await db.execute(stmt)
     return todos.scalars().all()
 
 

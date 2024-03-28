@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
