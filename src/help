@@ -7,3 +7,4 @@ alembic upgrade +1
 Postgresql
 
 asynio
+alembic upgrade head
