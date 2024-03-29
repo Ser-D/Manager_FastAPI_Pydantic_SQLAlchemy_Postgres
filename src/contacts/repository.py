@@ -20,11 +20,16 @@ async def get_contact(contact_id: int, db: AsyncSession):
 
 
 async def create_contact(body: ContactSchema, db: AsyncSession):
-    contact = ContactModel(**body.model_dump(exclude_unset=True, exclude_defaults=True))  # (name=body.name, phone=body.phone, ...)
+    contact = ContactModel(
+        **body.model_dump(exclude_unset=True, exclude_defaults=True))  # (name=body.name, phone=body.phone, ...)
     db.add(contact)
-    await db.commit()
-    await db.refresh(contact)
-    return contact
+    try:
+        await db.commit()
+        await db.refresh(contact)
+        return contact
+    except Exception as err:
+        return None
+
 
 
 async def update_contact(contact_id: int, body: ContactSchema, db: AsyncSession):
@@ -37,7 +42,7 @@ async def update_contact(contact_id: int, body: ContactSchema, db: AsyncSession)
         contact.email = body.email
         contact.phone = body.phone
         contact.birthday = body.birthday
-        contact.notes = body.notes
+        contact.info = body.info
         await db.commit()
         await db.refresh(contact)
     return contact
@@ -73,7 +78,7 @@ async def upcoming_birthday(db: AsyncSession):
         extract("day", ContactModel.birthday) >= current_date.day,
         extract("month", ContactModel.birthday) <= next_week.month,
         extract("day", ContactModel.birthday) <= next_week.day
-        )
+    )
     )
     contacts = await db.execute(stmt)
     return contacts.scalars().all()

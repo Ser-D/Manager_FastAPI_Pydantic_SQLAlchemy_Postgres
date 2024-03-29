@@ -20,7 +20,6 @@ async def get_contacts(limit: int = Query(10, ge=10, le=500), offset: int = Quer
 @router.get('/{contact_id}', response_model=ContactResponseSchema)
 async def get_contact(contact_id: int = Path(ge=1), db: AsyncSession = Depends(get_database)):
     contact = await repository.get_contact(contact_id, db)
-    print(contact)
     if contact is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='NOT FOUND')
     return contact
@@ -29,6 +28,8 @@ async def get_contact(contact_id: int = Path(ge=1), db: AsyncSession = Depends(g
 @router.post('/', response_model=ContactResponseSchema, status_code=status.HTTP_201_CREATED)
 async def create_contact(body: ContactSchema, db: AsyncSession = Depends(get_database)):
     contact = await repository.create_contact(body, db)
+    if contact is None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email or phone already in use")
     return contact
 
 

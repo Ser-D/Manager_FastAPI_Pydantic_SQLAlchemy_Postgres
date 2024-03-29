@@ -18,8 +18,7 @@ class DataBaseSessionManager:
         session = self._session_maker()
         try:
             yield session
-        except Exception as err:
-            print(err)
+        except:
             await session.rollback()
         finally:
             await session.close()
@@ -30,4 +29,4 @@ sessionmanager = DataBaseSessionManager(config.DB_URL)
 
 async def get_database():
     async with sessionmanager.session() as session:
-        yield session
+        return session
