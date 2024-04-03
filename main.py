@@ -4,12 +4,14 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.contacts.routes import router
+from src.contacts.routes import router as cont_routers
 from src.database.db_postgresql import get_database
+from src.users.routes import router as user_routers
 
 app = FastAPI()
 
-app.include_router(router)
+app.include_router(cont_routers)
+app.include_router(user_routers)
 
 
 @app.get('/')

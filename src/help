@@ -8,3 +8,5 @@ Postgresql
 
 asynio
 alembic upgrade head
+
+alembic revision --autogenerate -m "add users"
