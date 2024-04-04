@@ -16,9 +16,9 @@ async def get_contacts(
     limit: int = Query(10, ge=10, le=500),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_database), 
-    current_user = Depends(auth_service.get_current_user)
+    user = Depends(auth_service.get_current_user)
 ):
-    contacts = await repository.get_contacts(limit, offset, db)
+    contacts = await repository.get_contacts(limit, offset, db, user)
     return contacts
 
 
@@ -26,9 +26,9 @@ async def get_contacts(
 async def get_contact(
     contact_id: int = Path(ge=1), 
     db: AsyncSession = Depends(get_database), 
-    current_user = Depends(auth_service.get_current_user)
+    user = Depends(auth_service.get_current_user)
 ):
-    contact = await repository.get_contact(contact_id, db)
+    contact = await repository.get_contact(contact_id, db, user)
     if contact is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='NOT FOUND')
     return contact
@@ -37,9 +37,9 @@ async def get_contact(
 @router.post('/', response_model=ContactResponseSchema, status_code=status.HTTP_201_CREATED)
 async def create_contact(body: ContactSchema, 
                          db: AsyncSession = Depends(get_database), 
-                         current_user = Depends(auth_service.get_current_user)
+                         user = Depends(auth_service.get_current_user)
                          ):
-    contact = await repository.create_contact(body, db)
+    contact = await repository.create_contact(body, db, user)
     if contact is None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email or phone already in use")
     return contact
@@ -48,9 +48,9 @@ async def create_contact(body: ContactSchema,
 @router.put("/{contact_id}")
 async def update_contact(body: ContactUpdateSchema, contact_id: int = Path(ge=1),
                         db: AsyncSession = Depends(get_database),
-                        current_user = Depends(auth_service.get_current_user)
+                        user = Depends(auth_service.get_current_user)
                         ):
-    contact = await repository.update_contact(contact_id, body, db)
+    contact = await repository.update_contact(contact_id, body, db, user)
     if contact is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOT FOUND")
     return contact
@@ -59,26 +59,26 @@ async def update_contact(body: ContactUpdateSchema, contact_id: int = Path(ge=1)
 @router.delete("/{contact_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_contact(contact_id: int = Path(ge=1), 
                          db: AsyncSession = Depends(get_database),
-                         current_user = Depends(auth_service.get_current_user)
+                         user = Depends(auth_service.get_current_user)
                          ):
-    contact = await repository.delete_contact(contact_id, db)
+    contact = await repository.delete_contact(contact_id, db, user)
     return contact
 
 
 @router.get("/find/{query}", response_model=list[ContactResponseSchema])
 async def find_contact(query: str, 
                        db: AsyncSession = Depends(get_database),
-                        current_user = Depends(auth_service.get_current_user)
+                        user = Depends(auth_service.get_current_user)
                         ):
-    contacts = await repository.find_contacts(query, db)
+    contacts = await repository.find_contacts(query, db, user)
     if contacts is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOT FOUND")
     return contacts
 
 
 @router.get("/upcoming_birthdays/", response_model=list[ContactResponseSchema])
-async def upcoming_birthday(db: AsyncSession = Depends(get_database), current_user = Depends(auth_service.get_current_user)):
-    contacts = await repository.upcoming_birthday(db)
+async def upcoming_birthday(db: AsyncSession = Depends(get_database), user = Depends(auth_service.get_current_user)):
+    contacts = await repository.upcoming_birthday(db, user)
     if contacts is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOT FOUND")
     return contacts

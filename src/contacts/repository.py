@@ -5,23 +5,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.contacts.models import ContactModel
 from src.contacts.schemas import ContactSchema
+from src.contacts.models import User
 
 
-async def get_contacts(limit: int, offset: int, db: AsyncSession):
-    stmt = select(ContactModel).offset(offset).limit(limit)
+async def get_contacts(limit: int, offset: int, db: AsyncSession, user: User):
+    stmt = select(ContactModel).filter_by(user=user).offset(offset).limit(limit)
     todos = await db.execute(stmt)
     return todos.scalars().all()
 
 
-async def get_contact(contact_id: int, db: AsyncSession):
-    stmt = select(ContactModel).filter_by(id=contact_id)
+async def get_contact(contact_id: int, db: AsyncSession, user: User):
+    stmt = select(ContactModel).filter_by(id=contact_id, user=user)
     contact = await db.execute(stmt)
     return contact.scalar_one_or_none()
 
 
-async def create_contact(body: ContactSchema, db: AsyncSession):
+async def create_contact(body: ContactSchema, db: AsyncSession, user: User):
     contact = ContactModel(
-        **body.model_dump(exclude_unset=True, exclude_defaults=True))  # (name=body.name, phone=body.phone, ...)
+        **body.model_dump(exclude_unset=True, exclude_defaults=True), user=user)  # (name=body.name, phone=body.phone, ...)
     db.add(contact)
     try:
         await db.commit()
@@ -32,8 +33,8 @@ async def create_contact(body: ContactSchema, db: AsyncSession):
 
 
 
-async def update_contact(contact_id: int, body: ContactSchema, db: AsyncSession):
-    stmt = select(ContactModel).filter_by(id=contact_id)
+async def update_contact(contact_id: int, body: ContactSchema, db: AsyncSession, user: User):
+    stmt = select(ContactModel).filter_by(id=contact_id, user=user)
     result = await db.execute(stmt)
     contact = result.scalar_one_or_none()
     if contact:
@@ -48,8 +49,8 @@ async def update_contact(contact_id: int, body: ContactSchema, db: AsyncSession)
     return contact
 
 
-async def delete_contact(contact_id: int, db: AsyncSession):
-    stmt = select(ContactModel).filter_by(id=contact_id)
+async def delete_contact(contact_id: int, db: AsyncSession, user: User):
+    stmt = select(ContactModel).filter_by(id=contact_id, user=user)
     contact = await db.execute(stmt)
     contact = contact.scalar_one_or_none()
     if contact:
@@ -58,19 +59,19 @@ async def delete_contact(contact_id: int, db: AsyncSession):
     return contact
 
 
-async def find_contacts(query: str, db: AsyncSession):
+async def find_contacts(query: str, db: AsyncSession, user: User):
     stmt = select(ContactModel).filter(or_(
         ContactModel.name.ilike(f"%{query}%"),
         ContactModel.surname.ilike(f"%{query}"),
         ContactModel.email.ilike(f"%{query}%"),
         ContactModel.phone.ilike(f"%{query}%")
-    )
+    ).filter_by(user=user)
     )
     contacts = await db.execute(stmt)
     return contacts.scalars().all()
 
 
-async def upcoming_birthday(db: AsyncSession):
+async def upcoming_birthday(db: AsyncSession, user: User):
     current_date = date.today()
     next_week = current_date + timedelta(days=7)
     stmt = select(ContactModel).filter(and_(
@@ -78,7 +79,7 @@ async def upcoming_birthday(db: AsyncSession):
         extract("day", ContactModel.birthday) >= current_date.day,
         extract("month", ContactModel.birthday) <= next_week.month,
         extract("day", ContactModel.birthday) <= next_week.day
-    )
+    ).filter_by(user=user)
     )
     contacts = await db.execute(stmt)
     return contacts.scalars().all()

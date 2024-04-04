@@ -24,7 +24,9 @@ async def signup(body: UserSchema, db: AsyncSession = Depends(get_database)):
 
 @router.post("/login", response_model=TokenSchema)
 async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_database)):
+    print(body.username)
     user = await repository.get_user_by_email(body.username, db)
+    print(user)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid credentials')
     if not auth_service.verify_password(body.password, user.password):

@@ -1,6 +1,8 @@
 from datetime import date, datetime
 from pydantic import Field, EmailStr, BaseModel, field_validator
 
+from src.users.schemas import UserResponseSchema
+
 
 class ContactSchema(BaseModel):
     name: str = Field(min_length=2, max_length=25)
@@ -25,6 +27,12 @@ class ContactResponseSchema(BaseModel):
     phone: str
     birthday: date
     info: str
+    created_at: datetime | None
+    updated_at: datetime | None
+    user: UserResponseSchema | None
+
+    class Config:
+        from_attributes = True
 
 
 class ContactUpdateSchema(ContactSchema):
