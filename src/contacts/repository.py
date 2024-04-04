@@ -60,12 +60,12 @@ async def delete_contact(contact_id: int, db: AsyncSession, user: User):
 
 
 async def find_contacts(query: str, db: AsyncSession, user: User):
-    stmt = select(ContactModel).filter(or_(
+    stmt = select(ContactModel).filter_by(user=user).filter(or_(
         ContactModel.name.ilike(f"%{query}%"),
         ContactModel.surname.ilike(f"%{query}"),
         ContactModel.email.ilike(f"%{query}%"),
         ContactModel.phone.ilike(f"%{query}%")
-    ).filter_by(user=user)
+    )
     )
     contacts = await db.execute(stmt)
     return contacts.scalars().all()
@@ -74,12 +74,12 @@ async def find_contacts(query: str, db: AsyncSession, user: User):
 async def upcoming_birthday(db: AsyncSession, user: User):
     current_date = date.today()
     next_week = current_date + timedelta(days=7)
-    stmt = select(ContactModel).filter(and_(
+    stmt = select(ContactModel).filter_by(user=user).filter(and_(
         extract("month", ContactModel.birthday) >= current_date.month,
         extract("day", ContactModel.birthday) >= current_date.day,
         extract("month", ContactModel.birthday) <= next_week.month,
         extract("day", ContactModel.birthday) <= next_week.day
-    ).filter_by(user=user)
+    )
     )
     contacts = await db.execute(stmt)
     return contacts.scalars().all()
