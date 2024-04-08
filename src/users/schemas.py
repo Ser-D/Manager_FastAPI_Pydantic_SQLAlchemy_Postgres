@@ -28,3 +28,7 @@ class TokenSchema(BaseModel):
 
 class LogoutResponse(BaseModel):
     result: str
+
+
+class RequestEmail(BaseModel):
+    email: EmailStr

@@ -1,17 +1,36 @@
 import uvicorn
+import redis.asyncio as redis
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi_limiter import FastAPILimiter
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.contacts.routes import router as cont_routers
 from src.database.db_postgresql import get_database
-from src.users.routes import router as user_routers
+from src.users.routes import router as users_routers
+from src.users.routers_user import router as user_routers
+from src.conf.config import config
 
 app = FastAPI()
 
+app.mount('/static', StaticFiles(directory='src/static'), name='static')
+
 app.include_router(cont_routers)
+app.include_router(users_routers)
 app.include_router(user_routers)
+
+
+@app.on_event("startup")
+async def startup():
+    r = await redis.Redis(
+        host=config.REDIS_DOMAIN,
+        port=config.REDIS_PORT,
+        db=0,
+        password=config.REDIS_PASSWORD,
+    )
+    await FastAPILimiter.init(r)
 
 
 @app.get('/')
