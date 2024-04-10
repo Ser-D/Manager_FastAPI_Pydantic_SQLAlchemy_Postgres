@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.contacts.routes import router as cont_routers
 from src.database.db_postgresql import get_database
 from src.users.routes import router as users_routers
-from src.users.routers_user import router as user_routers
+from src.users.routes_user import router as user_routers
 from src.conf.config import config
 
 app = FastAPI()
