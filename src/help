@@ -8,5 +8,12 @@ Postgresql
 
 asynio
 alembic upgrade head
+alembic upgrade heads
 
 alembic revision --autogenerate -m "add users"
+
+docker-compose up -d
+
+port:
+5432 -> 5433
+6379 -> 6378
