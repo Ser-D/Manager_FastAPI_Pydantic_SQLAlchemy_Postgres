@@ -7,7 +7,7 @@ from src.users.schemas import UserResponseSchema
 class ContactSchema(BaseModel):
     name: str = Field(min_length=2, max_length=25)
     surname: str = Field(min_length=2, max_length=50)
-    email: str = EmailStr
+    email: str = Field()
     phone: str = Field(min_length=3, max_length=25)
     birthday: date = Field()
     info: str = Field(max_length=250, nullable=True)
@@ -23,7 +23,7 @@ class ContactResponseSchema(BaseModel):
     id: int = 1
     name: str
     surname: str
-    email: EmailStr
+    email: str
     phone: str
     birthday: date
     info: str

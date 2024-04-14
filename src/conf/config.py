@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     REDIS_PORT: int = 6379
     REDIS_PASSWORD: str | None = None
     CLD_NAME: str = 'hw'
-    CLD_API_KEY: int = "Cloudinary API key"
+    CLD_API_KEY: int = 111111
     CLD_API_SECRET: str = "Cloudinary API secret"
 
     @field_validator("ALGORITHM")

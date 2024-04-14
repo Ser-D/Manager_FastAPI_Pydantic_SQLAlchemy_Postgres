@@ -17,3 +17,5 @@ docker-compose up -d
 port:
 5432 -> 5433
 6379 -> 6378
+
+python -Xutf8 manage.py dumpdata --format=json --natural-foreign --natural-primary -e auth -e contenttypes -e auth.Permission -e admin.logentry > бази даних/seeds/dump.json

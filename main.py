@@ -1,4 +1,5 @@
 import re
+from contextlib import asynccontextmanager
 from ipaddress import ip_address
 from pathlib import Path
 from typing import Callable
@@ -20,7 +21,20 @@ from src.users.routes import router as users_routers
 from src.users.routes_user import router as user_routers
 from src.conf.config import config
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    r = await redis.Redis(
+        host=config.REDIS_DOMAIN,
+        port=config.REDIS_PORT,
+        db=0,
+        password=config.REDIS_PASSWORD,
+    )
+    await FastAPILimiter.init(r)
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 origins = ["http://localhost:8000",
            "http://127.0.0.1:8000"]
@@ -69,22 +83,12 @@ user_agent_ban_list = [r"Googlebot", r"Python-urllib"]
 
 BASE_DIR = Path(__file__).parent
 directory = BASE_DIR.joinpath("src").joinpath("static")
-app.mount('/static', StaticFiles(directory='src/static'), name='static')
+app.mount('/static', StaticFiles(directory=directory), name='static')
 
 app.include_router(cont_routers)
 app.include_router(users_routers)
 app.include_router(user_routers)
 
-
-@app.on_event("startup")
-async def startup():
-    r = await redis.Redis(
-        host=config.REDIS_DOMAIN,
-        port=config.REDIS_PORT,
-        db=0,
-        password=config.REDIS_PASSWORD,
-    )
-    await FastAPILimiter.init(r)
 
 
 @app.get('/')
