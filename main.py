@@ -1,5 +1,6 @@
 import re
 from ipaddress import ip_address
+from pathlib import Path
 from typing import Callable
 
 import uvicorn
@@ -66,6 +67,8 @@ user_agent_ban_list = [r"Googlebot", r"Python-urllib"]
 #     return response
 
 
+BASE_DIR = Path(__file__).parent
+directory = BASE_DIR.joinpath("src").joinpath("static")
 app.mount('/static', StaticFiles(directory='src/static'), name='static')
 
 app.include_router(cont_routers)

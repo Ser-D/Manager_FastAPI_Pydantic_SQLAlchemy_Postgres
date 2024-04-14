@@ -9,6 +9,16 @@ from src.contacts.models import User
 
 
 async def get_contacts(limit: int, offset: int, db: AsyncSession, user: User):
+    """
+        The get_contacts function returns a list of todos for the user.
+
+        :param limit: int: Limit the number of contacts returned
+        :param offset: int: Skip the first n results
+        :param db: AsyncSession: Pass a database connection to the function
+        :param user: User: Filter the contacts by user
+        :return: A list of contact objects
+        :doc-author: handmade
+    """
     stmt = select(ContactModel).filter_by(user=user).offset(offset).limit(limit)
     todos = await db.execute(stmt)
     return todos.scalars().all()
