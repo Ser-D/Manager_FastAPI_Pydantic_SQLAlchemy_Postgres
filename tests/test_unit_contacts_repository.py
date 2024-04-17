@@ -104,7 +104,7 @@ class TestAsyncContacts(unittest.IsolatedAsyncioTestCase):
         contacts = [ContactModel(id=1, name="test_name", surname="test_surname", email="test_email", phone="test_phone",
                                  birthday="2020-04-01", info="test_info", user=self.user),
                     ContactModel(id=2, name="test_name", surname="test_surname", email="test_email", phone="test_phone",
-                                 birthday="t2020-04-01", info="test_info", user=self.user)]
+                                 birthday="2020-04-01", info="test_info", user=self.user)]
         mocked_contacts = MagicMock()
         mocked_contacts.scalars.return_value.all.return_value = contacts
         self.session.execute.return_value = mocked_contacts
