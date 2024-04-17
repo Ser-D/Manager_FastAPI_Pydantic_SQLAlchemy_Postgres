@@ -41,7 +41,7 @@ origins = ["http://localhost:8000",
 
 banned_ips = [
     ip_address("192.168.1.1"),
-    ip_address("192.168.1.2",),
+    ip_address("192.168.1.2", ),
     # ip_address("127.0.0.1",)
 ]
 
@@ -53,7 +53,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # @app.middleware("http")
 # async def ban_ips(request: Request, call_next: Callable):
 #     ip = ip_address(request.client.host)
@@ -64,7 +63,6 @@ app.add_middleware(
 
 
 user_agent_ban_list = [r"Googlebot", r"Python-urllib"]
-
 
 # @app.middleware("http")
 # async def user_agent_ban_middleware(request: Request, call_next: Callable):
@@ -88,7 +86,6 @@ app.mount('/static', StaticFiles(directory=directory), name='static')
 app.include_router(cont_routers)
 app.include_router(users_routers)
 app.include_router(user_routers)
-
 
 
 @app.get('/')

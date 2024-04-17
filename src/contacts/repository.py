@@ -3,14 +3,13 @@ from datetime import date, timedelta
 from sqlalchemy import select, or_, and_, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.contacts.models import ContactModel
+from src.contacts.models import ContactModel, User
 from src.contacts.schemas import ContactSchema
-from src.contacts.models import User
 
 
 async def get_contacts(limit: int, offset: int, db: AsyncSession, user: User):
     """
-        The get_contacts function returns a list of todos for the user.
+        The get_contacts function returns a list of сontacts for the user.
 
         :param limit: int: Limit the number of contacts returned
         :param offset: int: Skip the first n results
@@ -19,6 +18,7 @@ async def get_contacts(limit: int, offset: int, db: AsyncSession, user: User):
         :return: A list of contact objects
         :doc-author: handmade
     """
+
     stmt = select(ContactModel).filter_by(user=user).offset(offset).limit(limit)
     todos = await db.execute(stmt)
     return todos.scalars().all()
@@ -32,7 +32,8 @@ async def get_contact(contact_id: int, db: AsyncSession, user: User):
 
 async def create_contact(body: ContactSchema, db: AsyncSession, user: User):
     contact = ContactModel(
-        **body.model_dump(exclude_unset=True, exclude_defaults=True), user=user)  # (name=body.name, phone=body.phone, ...)
+        **body.model_dump(exclude_unset=True, exclude_defaults=True),
+        user=user)  # (name=body.name, phone=body.phone, ...)
     db.add(contact)
     try:
         await db.commit()
@@ -40,7 +41,6 @@ async def create_contact(body: ContactSchema, db: AsyncSession, user: User):
         return contact
     except Exception as err:
         return None
-
 
 
 async def update_contact(contact_id: int, body: ContactSchema, db: AsyncSession, user: User):

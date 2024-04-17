@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from pydantic import Field, EmailStr, BaseModel, field_validator
+from pydantic import Field, EmailStr, BaseModel, field_validator, ConfigDict
 
 from src.users.schemas import UserResponseSchema
 
@@ -31,8 +31,10 @@ class ContactResponseSchema(BaseModel):
     updated_at: datetime | None
     user: UserResponseSchema | None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+    # class Config:
+    #     from_attributes = True
 
 
 class ContactUpdateSchema(ContactSchema):

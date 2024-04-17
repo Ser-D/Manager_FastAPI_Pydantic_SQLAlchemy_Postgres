@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
 class UserSchema(BaseModel):
@@ -16,8 +16,10 @@ class UserResponseSchema(BaseModel):
     email: str
     avatar: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+    # class Config:
+    #     from_attributes = True
 
 
 class TokenSchema(BaseModel):
@@ -31,4 +33,4 @@ class LogoutResponse(BaseModel):
 
 
 class RequestEmail(BaseModel):
-    email: EmailStr
+    email: str
