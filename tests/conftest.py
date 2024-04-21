@@ -1,3 +1,4 @@
+import contextlib
 import sys
 import os
 
@@ -10,7 +11,7 @@ import pytest_asyncio
 from fastapi.testclient import TestClient
 from fastapi_limiter import FastAPILimiter
 from sqlalchemy.pool import StaticPool
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession, AsyncEngine
 
 from main import app
 from src.contacts.models import Base, User
@@ -19,22 +20,45 @@ from src.services.auth import auth_service
 
 SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
-engine = create_async_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
-)
+# engine = create_async_engine(
+#     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
+# )
 
-TestingSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, expire_on_commit=False, bind=engine)
+# TestingSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, expire_on_commit=False, bind=engine)
 
 test_user = {"username": "deadpool", "email": "deadpool@example.com", "password": "12345678"}
+
+
+class DataBaseSessionManager:
+    def __init__(self, url: str):
+        self._engine: AsyncEngine | None = create_async_engine(url)
+        self._session_maker: async_sessionmaker = async_sessionmaker(autoflush=False, autocommit=False,
+                                                                     bind=self._engine)
+        self.engine = self._engine
+
+    @contextlib.asynccontextmanager
+    async def session(self):
+        if self._session_maker is None:
+            raise Exception('Session is not initialized')
+        session = self._session_maker()
+        try:
+            yield session
+        except:
+            await session.rollback()
+        finally:
+            await session.close()
+
+
+sessionmanager = DataBaseSessionManager(SQLALCHEMY_DATABASE_URL)
 
 
 @pytest.fixture(scope="module", autouse=True)
 def init_models_wrap():
     async def init_models():
-        async with engine.begin() as conn:
+        async with sessionmanager.engine.begin() as conn:
             await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
-        async with TestingSessionLocal() as session:
+        async with sessionmanager.session() as session:
             hash_password = auth_service.get_password_hash(test_user["password"])
             current_user = User(username=test_user["username"], email=test_user["email"], password=hash_password,
                                 confirmed=True)
@@ -48,17 +72,21 @@ def init_models_wrap():
 def client():
     # Dependency override
 
-    async def override_get_database():
-        session = TestingSessionLocal()
-        try:
-            yield session
-        except Exception as err:
-            print(err)
-            await session.rollback()
-        finally:
-            await session.close()
+    # async def override_get_database():
+    #     session = TestingSessionLocal()
+    #     try:
+    #         yield session
+    #     except Exception as err:
+    #         print(err)
+    #         await session.rollback()
+    #     finally:
+    #         await session.close()
 
-    app.dependency_overrides[get_database()] = override_get_database
+    async def override_get_database():
+        async with sessionmanager.session() as session:
+            return session
+
+    app.dependency_overrides[get_database] = override_get_database
 
     yield TestClient(app)
 

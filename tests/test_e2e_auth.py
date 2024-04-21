@@ -2,12 +2,10 @@ import pytest
 
 from unittest.mock import Mock, patch, AsyncMock
 from sqlalchemy import select
-from tests.conftest import TestingSessionLocal
 from src.conf import messages
 
 from src.contacts.models import User
-from src.services.auth import auth_service
-from tests.conftest import TestingSessionLocal, test_user
+from conftest import sessionmanager
 
 user_data = {"username": "Alarm", "email": "Alarm@example.com", "password": "12345678"}
 
@@ -15,7 +13,7 @@ user_data = {"username": "Alarm", "email": "Alarm@example.com", "password": "123
 def test_signup(client, monkeypatch):
     mock_send_email = Mock()
     monkeypatch.setattr("src.users.routes.send_email", mock_send_email)
-    response = client.post("/auth/signup", json=user_data)
+    response = client.post("auth/signup", json=user_data)
     assert response.status_code == 201, response.text
     data = response.json()
     assert data["username"] == user_data["username"]
@@ -43,7 +41,7 @@ def test_not_confirmed_login(client):
 
 @pytest.mark.asyncio
 async def test_login(client):
-    async with TestingSessionLocal() as session:
+    async with sessionmanager.session() as session:
         current_user = await session.execute(
             select(User).where(User.email == user_data.get("email"))
         )
@@ -66,7 +64,7 @@ def test_wrong_password_login(client, monkeypatch):
                            data={"username": user_data.get("email"), "password": "password"})
     assert response.status_code == 401, response.text
     data = response.json()
-    assert data["detail"] == messages.NOT_CONFIRM
+    assert data["detail"] == messages.INVALID_CREDENTIALS
 
 
 def test_wrong_email_login(client):
@@ -74,7 +72,7 @@ def test_wrong_email_login(client):
                            data={"username": "email", "password": user_data.get("password")})
     assert response.status_code == 401, response.text
     data = response.json()
-    assert data["detail"] == "Invalid email"
+    assert data["detail"] == messages.INVALID_CREDENTIALS
 
 
 def test_validation_error_login(client, monkeypatch):

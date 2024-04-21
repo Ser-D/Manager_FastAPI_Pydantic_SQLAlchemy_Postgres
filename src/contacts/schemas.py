@@ -14,7 +14,7 @@ class ContactSchema(BaseModel):
     info: str = Field(max_length=250, nullable=True)
 
     @field_validator('email')
-    def future_date_filter(cls, value_email):
+    def email_cheacker(cls, value_email):
         if re.search(r'[\w.-]+@[\w.-]+', value_email):
             return value_email
         raise ValueError("Invalid email")
