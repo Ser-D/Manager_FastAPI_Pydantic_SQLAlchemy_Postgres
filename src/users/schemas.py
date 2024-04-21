@@ -13,7 +13,7 @@ class UserSchema(BaseModel):
 class UserResponseSchema(BaseModel):
     id: int = 1
     username: str
-    email: str
+    email: str | None
     avatar: str
 
     model_config = ConfigDict(from_attributes=True)

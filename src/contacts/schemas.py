@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime
 from pydantic import Field, EmailStr, BaseModel, field_validator, ConfigDict
 
@@ -11,6 +12,12 @@ class ContactSchema(BaseModel):
     phone: str = Field(min_length=3, max_length=25)
     birthday: date = Field()
     info: str = Field(max_length=250, nullable=True)
+
+    @field_validator('email')
+    def future_date_filter(cls, value_email):
+        if re.search(r'[\w.-]+@[\w.-]+', value_email):
+            return value_email
+        raise ValueError("Invalid email")
 
     @field_validator('birthday')
     def future_date_filter(cls, value_date):

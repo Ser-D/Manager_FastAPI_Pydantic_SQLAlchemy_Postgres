@@ -23,4 +23,7 @@ python -Xutf8 manage.py dumpdata --format=json --natural-foreign --natural-prima
 
 pytest -v
 
+ pytest --cov=./src --cov-report html tests/
+
+
 

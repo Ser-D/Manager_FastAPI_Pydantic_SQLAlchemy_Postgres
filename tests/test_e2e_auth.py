@@ -39,3 +39,47 @@ def test_not_confirmed_login(client):
     assert response.status_code == 401, response.text
     data = response.json()
     assert data["detail"] == messages.NOT_CONFIRM
+
+
+@pytest.mark.asyncio
+async def test_login(client):
+    async with TestingSessionLocal() as session:
+        current_user = await session.execute(
+            select(User).where(User.email == user_data.get("email"))
+        )
+        current_user = current_user.scalar_one_or_none()
+        if current_user:
+            current_user.confirmed = True
+            await session.commit()
+
+    response = client.post("/auth/login",
+                           data={"username": user_data.get("email"), "password": user_data.get("password")})
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert "access_token" in data
+    assert "refresh_token" in data
+    assert "token_type" in data
+
+
+def test_wrong_password_login(client, monkeypatch):
+    response = client.post("auth/login",
+                           data={"username": user_data.get("email"), "password": "password"})
+    assert response.status_code == 401, response.text
+    data = response.json()
+    assert data["detail"] == messages.NOT_CONFIRM
+
+
+def test_wrong_email_login(client):
+    response = client.post("auth/login",
+                           data={"username": "email", "password": user_data.get("password")})
+    assert response.status_code == 401, response.text
+    data = response.json()
+    assert data["detail"] == "Invalid email"
+
+
+def test_validation_error_login(client, monkeypatch):
+    response = client.post("auth/login",
+                           data={"password": user_data.get("password")})
+    assert response.status_code == 422, response.text
+    data = response.json()
+    assert "detail" in data
